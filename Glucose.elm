@@ -91,18 +91,14 @@ initModelSpace =
         |> normalize
 
 
-update' : (o -> m -> Probability) -> o -> ModelSpace m -> ModelSpace m
-update' likelihood obs model =
+update : (o -> m -> Probability) -> o -> ModelSpace m -> ModelSpace m
+update likelihood obs model =
     let
         up (m,p) = (m, p * (likelihood obs m))
     in
         model
         |> List.map (List.map up)
         |> normalize
-
-
-update : Observation -> ModelSpace Model -> ModelSpace Model
-update = update' likelihood
 
 
 -- MAIN
@@ -134,8 +130,10 @@ showMatrix model =
 main : Html
 main =
     initModelSpace
-    |> update { bg0 = 276, bg1 =  61, bolus = 11, food = {carbs =  30} }
-    |> update { bg0 = 129, bg1 = 175, bolus =  3, food = {carbs =  40} }
-    |> update { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
-    |> update { bg0 = 171, bg1 =  69, bolus = 12, food = {carbs = 120} }
+    |> flip (List.foldr (update likelihood))
+        [ { bg0 = 276, bg1 =  61, bolus = 11, food = {carbs =  30} }
+        , { bg0 = 129, bg1 = 175, bolus =  3, food = {carbs =  40} }
+        , { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
+        , { bg0 = 171, bg1 =  69, bolus = 12, food = {carbs = 120} }
+        ]
     |> showMatrix
