@@ -3,7 +3,7 @@ module Glucose where
 import Html exposing (Html)
 import Graph
 import Stats exposing (normal)
-import Bayes exposing (ModelSpace)
+import Bayes exposing (DiscreteDistribution)
 
 
 type alias BloodGlucoseReading = Float
@@ -61,13 +61,13 @@ likelihood obs model =
               normal.pdf expectedBg1 bgSigma obs.bg1
 
 
-initModelSpace : ModelSpace Model
-initModelSpace =
+prior : DiscreteDistribution Model
+prior =
     let
         corrs = [0..40]
         carbs = [0..30]
     in
-        List.map (\a -> List.map (\b -> (Model a b, 1)) carbs) corrs
+        List.concatMap (\a -> List.map (\b -> (Model a b, 1)) carbs) corrs
         |> Bayes.normalize
 
 
@@ -76,12 +76,16 @@ initModelSpace =
 
 main : Html
 main =
-    initModelSpace
+    prior
     |> flip (List.foldl (Bayes.update likelihood))
         [ { bg0 = 276, bg1 =  61, bolus = 11, food = {carbs =  30} }
         , { bg0 = 129, bg1 = 175, bolus =  3, food = {carbs =  40} }
         , { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
         , { bg0 = 171, bg1 =  69, bolus = 12, food = {carbs = 120} }
         ]
-    |> List.map (List.map snd)
+    |> Graph.matrixDataset "Model Distribution"
+        ("Correction Factor", fst >> .correctionFactor)
+        ("Carb Ratio", fst >> .carbRatio)
+        ("Proabability", snd)
+        0
     |> Graph.matrix
