@@ -3,9 +3,7 @@ module Glucose where
 import Html exposing (Html)
 import Viz
 import Stats exposing (normal)
-
-
-type alias Probability = Float -- [0, 1]
+import Bayes exposing (ModelSpace)
 
 
 type alias BloodGlucoseReading = Float
@@ -41,12 +39,14 @@ type alias Observation =
     , food : FoodDose
     }
 
+
 type alias Model =
     { correctionFactor : CorrectionFactor
     , carbRatio : CarbRatio
     }
 
-likelihood : Observation -> Model -> Probability
+
+likelihood : Observation -> Model -> Float
 likelihood obs model =
     if | model.carbRatio <= 0 -> 0
        | model.correctionFactor <= 0 -> 0
@@ -61,17 +61,6 @@ likelihood obs model =
               normal.pdf expectedBg1 bgSigma obs.bg1
 
 
-type alias ModelSpace m = List (List (m,Probability))
-
-
-normalize : ModelSpace m -> ModelSpace m
-normalize model =
-    let total = List.sum (List.concatMap (List.map snd) model)
-        div (m,p) = (m,p/total)
-    in
-      List.map (List.map div) model
-
-
 initModelSpace : ModelSpace Model
 initModelSpace =
     let
@@ -79,17 +68,7 @@ initModelSpace =
         carbs = [0..30]
     in
         List.map (\a -> List.map (\b -> (Model a b, 1)) carbs) corrs
-        |> normalize
-
-
-update : (o -> m -> Probability) -> o -> ModelSpace m -> ModelSpace m
-update likelihood obs model =
-    let
-        up (m,p) = (m, p * (likelihood obs m))
-    in
-        model
-        |> List.map (List.map up)
-        |> normalize
+        |> Bayes.normalize
 
 
 -- MAIN
@@ -98,7 +77,7 @@ update likelihood obs model =
 main : Html
 main =
     initModelSpace
-    |> flip (List.foldr (update likelihood))
+    |> flip (List.foldl (Bayes.update likelihood))
         [ { bg0 = 276, bg1 =  61, bolus = 11, food = {carbs =  30} }
         , { bg0 = 129, bg1 = 175, bolus =  3, food = {carbs =  40} }
         , { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
