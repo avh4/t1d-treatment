@@ -1,7 +1,7 @@
 module Glucose where
 
 import Html exposing (Html)
-import Viz
+import Graph
 import Stats exposing (normal)
 import Bayes exposing (ModelSpace)
 
@@ -83,4 +83,5 @@ main =
         , { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
         , { bg0 = 171, bg1 =  69, bolus = 12, food = {carbs = 120} }
         ]
-    |> Viz.showMatrix
+    |> List.map (List.map snd)
+    |> Graph.matrix
