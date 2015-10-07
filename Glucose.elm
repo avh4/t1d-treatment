@@ -1,8 +1,7 @@
 module Glucose where
 
 import Html exposing (Html)
-import Html.Attributes as Html
-import Table
+import Viz
 import Debug
 
 
@@ -103,29 +102,6 @@ update likelihood obs model =
 
 -- MAIN
 
-color : Float -> Float -> Float -> Html
-color min max x =
-    let
-        p = (x-min) / (max-min)
-        c =
-          if | p <=  1/6 -> "#dae8f5"
-             | p <=  2/6 -> "#bad6ea"
-             | p <=  3/6 -> "#88bedc"
-             | p <=  4/6 -> "#539dcc"
-             | p <=  5/6 -> "#297ab9"
-             | otherwise -> "#09559f"
-    in
-      Html.div [ Html.style [("background", c), ("width", "5px"), ("height", "5px")]] []
-
-
-showMatrix : ModelSpace m -> Html
-showMatrix model =
-  let
-      min = List.concat model |> List.map snd |> List.minimum |> Maybe.withDefault 0
-      max = List.concat model |> List.map snd |> List.maximum |> Maybe.withDefault 1
-  in
-      Table.matrix (snd >> color min max) model
-
 
 main : Html
 main =
@@ -136,4 +112,4 @@ main =
         , { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
         , { bg0 = 171, bg1 =  69, bolus = 12, food = {carbs = 120} }
         ]
-    |> showMatrix
+    |> Viz.showMatrix
