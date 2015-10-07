@@ -2,18 +2,10 @@ module Glucose where
 
 import Html exposing (Html)
 import Viz
-import Debug
+import Stats exposing (normal)
 
 
 type alias Probability = Float -- [0, 1]
-
-
-normalPdf : Float -> Float -> Float -> Float
-normalPdf mu sigma x =
-  let exp = -((x - mu)^2) / (2*(sigma^2))
-      k = 1 / (sigma * (sqrt (2*pi)))
-  in
-      k * (e^exp)
 
 
 type alias BloodGlucoseReading = Float
@@ -66,7 +58,7 @@ likelihood obs model =
                 - obs.bolus * model.correctionFactor
               bgSigma = 20
           in
-              normalPdf expectedBg1 bgSigma obs.bg1
+              normal.pdf expectedBg1 bgSigma obs.bg1
 
 
 type alias ModelSpace m = List (List (m,Probability))
