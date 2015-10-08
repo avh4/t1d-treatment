@@ -4,6 +4,9 @@ import Html exposing (Html)
 import Graph
 import Stats exposing (normal)
 import Bayes exposing (DiscreteDistribution)
+import StartApp
+import Effects
+import MatrixTable
 
 
 type alias BloodGlucoseReading = Float
@@ -74,8 +77,7 @@ prior =
 -- MAIN
 
 
-main : Html
-main =
+result =
     prior
     |> flip (List.foldl (Bayes.update likelihood))
         [ { bg0 = 276, bg1 =  61, bolus = 11, food = {carbs =  30} }
@@ -88,4 +90,29 @@ main =
         ("Carb Ratio", fst >> .carbRatio)
         ("Proabability", snd)
         0
-    |> Graph.matrix
+
+
+
+-- view : a -> b -> Html
+view address model =
+    Html.div []
+        [ Graph.matrix address result
+        , Html.text <| toString model
+        ]
+
+update action model =
+    case action of
+        MatrixTable.Hover v ->
+            (Just v, Effects.none)
+
+
+app =
+    StartApp.start
+        { init = (Nothing, Effects.none)
+        , update = update
+        , view = view
+        , inputs = []
+        }
+
+
+main = app.html
