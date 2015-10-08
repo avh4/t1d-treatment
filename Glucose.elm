@@ -5,7 +5,7 @@ import Graph
 import Stats exposing (normal)
 import Bayes exposing (DiscreteDistribution)
 import StartApp
-import Effects
+import Effects exposing (Effects)
 import MatrixTable
 
 
@@ -77,6 +77,7 @@ prior =
 -- MAIN
 
 
+result : Graph.DenseDataset
 result =
     prior
     |> flip (List.foldl (Bayes.update likelihood))
@@ -92,20 +93,26 @@ result =
         0
 
 
+type alias MainModel = Maybe Float
+type alias Action = MatrixTable.Action Float
 
--- view : a -> b -> Html
+
+view : Signal.Address Action -> MainModel -> Html
 view address model =
     Html.div []
         [ Graph.matrix address result
         , Html.text <| toString model
         ]
 
+
+update : Action -> MainModel -> (MainModel, Effects Action)
 update action model =
     case action of
         MatrixTable.Hover v ->
             (Just v, Effects.none)
 
 
+app : StartApp.App MainModel
 app =
     StartApp.start
         { init = (Nothing, Effects.none)
@@ -115,4 +122,5 @@ app =
         }
 
 
+main : Signal Html
 main = app.html
