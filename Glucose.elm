@@ -7,6 +7,7 @@ import Bayes exposing (DiscreteDistribution)
 import StartApp
 import Effects exposing (Effects)
 import MatrixTable
+import Dict
 
 
 type alias BloodGlucoseReading = Float
@@ -43,25 +44,30 @@ type alias Observation =
     }
 
 
-type alias Model =
-    { correctionFactor : CorrectionFactor
-    , carbRatio : CarbRatio
-    }
+type alias Model = (CorrectionFactor, CarbRatio, InsulinDose)
+    -- { correctionFactor : CorrectionFactor
+    -- , carbRatio : CarbRatio
+    -- , requiredBasal : InsulinDose
+    -- }
+model = (,,)
 
 
 likelihood : Observation -> Model -> Float
 likelihood obs model =
-    if | model.carbRatio <= 0 -> 0
-       | model.correctionFactor <= 0 -> 0
-       | otherwise ->
-          let carbFactor = model.carbRatio / model.correctionFactor
-              expectedBg1 =
-                obs.bg0
-                + obs.food.carbs / carbFactor
-                - obs.bolus * model.correctionFactor
-              bgSigma = 20
-          in
-              normal.pdf expectedBg1 bgSigma obs.bg1
+    let
+        (correctionFactor, carbRatio, _) = model
+    in
+        if | carbRatio <= 0 -> 0
+           | correctionFactor <= 0 -> 0
+           | otherwise ->
+              let carbFactor = carbRatio / correctionFactor
+                  expectedBg1 =
+                    obs.bg0
+                    + obs.food.carbs / carbFactor
+                    - (obs.bolus) * correctionFactor
+                  bgSigma = 20
+              in
+                  normal.pdf expectedBg1 bgSigma obs.bg1
 
 
 prior : DiscreteDistribution Model
@@ -69,9 +75,9 @@ prior =
     let
         corrs = [0..40]
         carbs = [0..30]
+        basals = [0..20]
     in
-        List.concatMap (\a -> List.map (\b -> (Model a b, 1)) carbs) corrs
-        |> Bayes.normalize
+        Bayes.uniformPrior3 model corrs carbs basals
 
 
 -- MAIN
@@ -86,9 +92,10 @@ result =
         , { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
         , { bg0 = 171, bg1 =  69, bolus = 12, food = {carbs = 120} }
         ]
+    |> Dict.toList
     |> Graph.matrixDataset "Model Distribution"
-        ("Correction Factor", fst >> .correctionFactor)
-        ("Carb Ratio", fst >> .carbRatio)
+        ("Correction Factor", fst >> (\(x,_,_) -> x))
+        ("Carb Ratio", fst >>  (\(_,x,_) -> x))
         ("Proabability", snd)
         0
 
