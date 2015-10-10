@@ -83,19 +83,58 @@ prior =
 -- MAIN
 
 
+result' : Bayes.DiscreteDistribution Model
+result' =
+  prior
+  |> flip (List.foldl (Bayes.update likelihood))
+      [ { bg0 = 276, bg1 =  61, bolus = 11, food = {carbs =  30} }
+      , { bg0 = 129, bg1 = 175, bolus =  3, food = {carbs =  40} }
+      , { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
+      , { bg0 = 171, bg1 =  69, bolus = 12, food = {carbs = 120} }
+      ]
+
 result : Graph.DenseDataset
 result =
-    prior
-    |> flip (List.foldl (Bayes.update likelihood))
-        [ { bg0 = 276, bg1 =  61, bolus = 11, food = {carbs =  30} }
-        , { bg0 = 129, bg1 = 175, bolus =  3, food = {carbs =  40} }
-        , { bg0 =  69, bg1 = 103, bolus =  0, food = {carbs =  30} }
-        , { bg0 = 171, bg1 =  69, bolus = 12, food = {carbs = 120} }
-        ]
+    result'
     |> Dict.toList
     |> Graph.matrixDataset "Model Distribution"
         ("Correction Factor", fst >> (\(x,_,_) -> x))
         ("Carb Ratio", fst >>  (\(_,x,_) -> x))
+        ("Proabability", snd)
+        0
+
+marg1 : Graph.DenseDataset
+marg1 =
+    result'
+    |> Bayes.marginal (\(a,b,c) -> a)
+    |> Dict.toList
+    |> Graph.matrixDataset "Marginal Correction Factor"
+        ("Correction Factor", fst)
+        ("_", always 0)
+        ("Proabability", snd)
+        0
+
+
+marg2 : Graph.DenseDataset
+marg2 =
+    result'
+    |> Bayes.marginal (\(a,b,c) -> b)
+    |> Dict.toList
+    |> Graph.matrixDataset "Marginal Carb Ratio"
+        ("Carb Ratio", fst)
+        ("_", always 0)
+        ("Proabability", snd)
+        0
+
+
+marg3 : Graph.DenseDataset
+marg3 =
+    result'
+    |> Bayes.marginal (\(a,b,c) -> c)
+    |> Dict.toList
+    |> Graph.matrixDataset "Marginal Basal"
+        ("Basal", fst)
+        ("_", always 0)
         ("Proabability", snd)
         0
 
@@ -109,6 +148,9 @@ view address model =
     Html.div []
         [ Graph.matrix address result
         , Html.text <| toString model
+        , Graph.matrix address marg1
+        , Graph.matrix address marg2
+        , Graph.matrix address marg3
         ]
 
 
