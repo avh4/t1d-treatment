@@ -8,6 +8,7 @@ import StartApp
 import Effects exposing (Effects)
 import MatrixTable
 import Dict
+import Array
 
 
 type alias BloodGlucoseReading = Float
@@ -103,40 +104,26 @@ result =
         ("Proabability", snd)
         0
 
-marg1 : Graph.DenseDataset
+
+marg1 : List (Float,Float)
 marg1 =
     result'
     |> Bayes.marginal (\(a,b,c) -> a)
     |> Dict.toList
-    |> Graph.matrixDataset "Marginal Correction Factor"
-        ("Correction Factor", fst)
-        ("_", always 0)
-        ("Proabability", snd)
-        0
 
 
-marg2 : Graph.DenseDataset
+marg2 : List (Float,Float)
 marg2 =
     result'
     |> Bayes.marginal (\(a,b,c) -> b)
     |> Dict.toList
-    |> Graph.matrixDataset "Marginal Carb Ratio"
-        ("Carb Ratio", fst)
-        ("_", always 0)
-        ("Proabability", snd)
-        0
 
 
-marg3 : Graph.DenseDataset
+marg3 : List (Float,Float)
 marg3 =
     result'
     |> Bayes.marginal (\(a,b,c) -> c)
     |> Dict.toList
-    |> Graph.matrixDataset "Marginal Basal"
-        ("Basal", fst)
-        ("_", always 0)
-        ("Proabability", snd)
-        0
 
 
 type alias MainModel = Maybe Float
@@ -148,9 +135,12 @@ view address model =
     Html.div []
         [ Graph.matrix address result
         , Html.text <| toString model
-        , Graph.matrix address marg1
-        , Graph.matrix address marg2
-        , Graph.matrix address marg3
+        , Html.h3 [] [ Html.text "Correction Factor"]
+        , Graph.distplot (300,200) marg1
+        , Html.h3 [] [ Html.text "Carb Ratio"]
+        , Graph.distplot (300,200) marg2
+        , Html.h3 [] [ Html.text "Basal"]
+        , Graph.distplot (300,200) marg3
         ]
 
 
