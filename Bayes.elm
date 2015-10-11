@@ -3,7 +3,7 @@ module Bayes
     , uniformPrior1, uniformPrior2, uniformPrior3
     , marginal
     , normalize, map
-    , update
+    , update, updateAll
     , get
     ) where
 
@@ -63,7 +63,11 @@ map =
     marginal
 
 
-update : (o -> comparable -> Probability) -> o -> DiscreteDistribution comparable -> DiscreteDistribution comparable
+update :
+    (o -> comparable -> Probability)
+    -> o
+    -> DiscreteDistribution comparable
+    -> DiscreteDistribution comparable
 update likelihood obs model =
     let
         up m p = p * (likelihood obs m)
@@ -71,6 +75,15 @@ update likelihood obs model =
         model
         |> Dict.map up
         |> normalize
+
+
+updateAll :
+    (o -> comparable -> Probability)
+    -> List o
+    -> DiscreteDistribution comparable
+    -> DiscreteDistribution comparable
+updateAll likelihood observations modelDistribution =
+    List.foldl (update likelihood) modelDistribution observations
 
 
 get : comparable -> DiscreteDistribution comparable -> Probability
