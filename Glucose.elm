@@ -68,7 +68,7 @@ likelihood obs model =
                   - (obs.bolus) * correctionFactor
                 bgSigma = 20
             in
-                normal.pdf expectedBg1 bgSigma obs.bg1
+                (normal expectedBg1 bgSigma).pdf obs.bg1
 
 
 prior : DiscreteDistribution Model

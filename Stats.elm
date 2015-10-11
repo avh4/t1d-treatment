@@ -1,6 +1,11 @@
 module Stats (normal) where
 
 
+type alias ContinuousDistribution =
+    { pdf : Float -> Float
+    }
+
+
 normalPdf : Float -> Float -> Float -> Float
 normalPdf mu sigma x =
   let exp = -((x - mu)^2) / (2*(sigma^2))
@@ -9,6 +14,6 @@ normalPdf mu sigma x =
       k * (e^exp)
 
 
-normal : { pdf : Float -> Float -> Float -> Float }
-normal =
-  { pdf = normalPdf }
+normal : Float -> Float -> ContinuousDistribution
+normal mu sigma =
+  { pdf = normalPdf mu sigma }
