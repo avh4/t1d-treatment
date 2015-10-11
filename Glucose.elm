@@ -58,17 +58,17 @@ likelihood obs model =
     let
         (correctionFactor, carbRatio, _) = model
     in
-        if | carbRatio <= 0 -> 0
-           | correctionFactor <= 0 -> 0
-           | otherwise ->
-              let carbFactor = carbRatio / correctionFactor
-                  expectedBg1 =
-                    obs.bg0
-                    + obs.food.carbs / carbFactor
-                    - (obs.bolus) * correctionFactor
-                  bgSigma = 20
-              in
-                  normal.pdf expectedBg1 bgSigma obs.bg1
+        if carbRatio <= 0 then 0
+        else if correctionFactor <= 0 then 0
+        else
+            let carbFactor = carbRatio / correctionFactor
+                expectedBg1 =
+                  obs.bg0
+                  + obs.food.carbs / carbFactor
+                  - (obs.bolus) * correctionFactor
+                bgSigma = 20
+            in
+                normal.pdf expectedBg1 bgSigma obs.bg1
 
 
 prior : DiscreteDistribution Model
