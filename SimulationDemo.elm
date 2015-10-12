@@ -23,7 +23,7 @@ data =
           |> Simulation.eventsAddBolus 12 2
         basals = 1.000
     in
-        Simulation.generate params basals events (0.55,0,120)
+        Simulation.generate params basals events (Simulation.steadyIob basals,0,120)
         |> List.indexedMap (,)
 
 

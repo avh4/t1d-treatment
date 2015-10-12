@@ -27,6 +27,13 @@ type alias TimeStep =
     , basal : UnitsPerHour
     }
 
+iobDecay = 0.97
+
+
+steadyIob : UnitsPerHour -> IobUnit
+steadyIob basal =
+    basal * -(iobDecay/(iobDecay-1)) / 60
+
 
 step :
     Parameters
@@ -44,7 +51,7 @@ step params event (iob0,cob0,bg0) =
         qBasal = params.requiredBasal
         iob = iob0 + bolus + basal/60
         cob = cob0 + food
-        di = (1-0.97)*iob
+        di = (1-iobDecay)*iob
         dc = (1-0.97)*cob
         bg = bg0 - (di-qBasal/60)*kCorr + dc*kCarb
     in
