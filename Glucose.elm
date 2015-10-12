@@ -12,35 +12,6 @@ import Array
 import Glucose.Model as Model
 
 
-type alias BloodGlucoseReading = Float
-type alias CorrectionFactor = Float
-type alias CarbRatio = Float
-type alias InsulinDose = Float
-type alias FoodDose =
-    { carbs : Float }
-
--- step :
---   (IobUnit, CobUnit, Bg)
---   -> Carbs
---   -> Bolus
---   -> Basal
---   -> CarbRatio
---   -> CorrectionFactor
---   -> Basal
---   -> (IobUnit, CobUnit, Bg)
--- step (iob0,cob0,bg0) food bolus basal kCarb kCorr qBasal =
---   let iob = iob0 + bolus + basal/60
---       cob = cob0 + food
---       di = (1-0.97)*iob
---       dc = (1-0.97)*cob
---       bg = bg0 - (di-q_basal/60)*kCorr + dc*k_carb
---   in
---       (iob-di, cob-dc, bg)
-
-
--- MAIN
-
-
 result' : Bayes.DiscreteDistribution Model.Parameters
 result' =
   Model.uniformPrior
