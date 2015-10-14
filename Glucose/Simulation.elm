@@ -86,13 +86,40 @@ eventsAddBolus t ins =
 type alias DefaultBasals = Float
 
 
-generate :
+calculate :
+    Parameters
+    -> DefaultBasals
+    -> Events
+    -> (IobUnit, CobUnit, BloodGlucoseReading)
+    -> (IobUnit, CobUnit, BloodGlucoseReading)
+calculate params basals events init =
+    let
+        event0 = TimeStep {carbs=0} 0 basals
+        init' = (init,event0)
+        step' t (last,event) =
+            let
+                event' =
+                    case Dict.get t events of
+                        Nothing ->
+                            TimeStep {carbs=0} 0 event.basal
+                        Just (Food f) ->
+                            TimeStep {carbs=f} 0 event.basal
+                        Just (Bolus i) ->
+                            TimeStep {carbs=0} i event.basal
+            in
+                ((step params event' last),event')
+    in
+        List.foldl step' init' [0..180]
+        |> fst
+
+
+trace :
     Parameters
     -> DefaultBasals
     -> Events
     -> (IobUnit, CobUnit, BloodGlucoseReading)
     -> List (IobUnit, CobUnit, BloodGlucoseReading)
-generate params basals events init =
+trace params basals events init =
     let
         event0 = TimeStep {carbs=0} 0 basals
         init' = (init,[],event0)

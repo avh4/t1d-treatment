@@ -17,11 +17,9 @@ all =
           events = Simulation.eventsEmpty
           basals = 1.000
       in
-          Simulation.generate params basals events (Simulation.steadyIob basals,0,120)
-      |> List.reverse
-      |> List.head
-      |> Maybe.map getBg
-      |> assertEqual (Just 120)
+          Simulation.calculate params basals events (Simulation.steadyIob basals,0,120)
+      |> getBg
+      |> assertEqual 120
       |> test "matched basal rate keeps bg steady",
 
       let
@@ -31,7 +29,7 @@ all =
               |> Simulation.eventsAddBolus 0 1.0
           basals = 0.000
       in
-          Simulation.generate params basals events (Simulation.steadyIob basals,0,120)
+          Simulation.trace params basals events (Simulation.steadyIob basals,0,120)
       |> List.reverse
       |> List.head
       |> Maybe.map (getBg >> round)
@@ -45,7 +43,7 @@ all =
               |> Simulation.eventsAddFood 0 14
           basals = 0.000
       in
-          Simulation.generate params basals events (Simulation.steadyIob basals,0,120)
+          Simulation.trace params basals events (Simulation.steadyIob basals,0,120)
       |> List.reverse
       |> List.head
       |> Maybe.map (getBg >> round)
