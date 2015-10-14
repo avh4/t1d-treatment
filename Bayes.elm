@@ -23,25 +23,30 @@ uniformPrior1 values =
 
 
 uniformPrior2 :
-    (a -> b -> comparable)
-    -> List a -> List b
+    (comparable' -> b -> comparable)
+    -> List comparable' -> List b
     -> DiscreteDistribution comparable
 uniformPrior2 fn v1s bs =
-    List.foldl (\a d ->
-        List.foldl (\b ->
-            Dict.insert (fn a b) 1) d bs) Dict.empty v1s
-    |> normalize
+    uniformPrior1 v1s
+    |> multiply fn bs
 
 
 uniformPrior3 :
-    (a -> b -> c -> comparable)
-    -> List a -> List b -> List c
+    (comparable' -> comparable'' -> c -> comparable)
+    -> List comparable' -> List comparable'' -> List c
     -> DiscreteDistribution comparable
 uniformPrior3 fn v1s bs cs =
-    List.foldl (\a d ->
-        List.foldl (\b d ->
-            List.foldl (\c ->
-                Dict.insert (fn a b c) 1) d cs) d bs) Dict.empty v1s
+    uniformPrior1 v1s
+    |> multiply (\x y -> (x,y)) bs
+    |> multiply (\(x,y) z -> fn x y z) cs
+
+
+multiply : (comparable -> b -> comparable') -> List b -> DiscreteDistribution comparable -> DiscreteDistribution comparable'
+multiply merge vs dist =
+    List.foldl (\v d ->
+        Dict.foldl (\v0 p ->
+            Dict.insert (merge v0 v) p) d dist)
+        Dict.empty vs -- TODO: should update like marginal
     |> normalize
 
 
