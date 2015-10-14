@@ -1,4 +1,9 @@
-module Glucose.Simulation where
+module Glucose.Simulation
+  ( trace, calculate
+  , eventsEmpty, eventsAddFood, eventsAddBolus
+  , Parameters
+  , steadyIob
+  ) where
 
 import Dict exposing (Dict)
 
@@ -84,45 +89,20 @@ eventsAddBolus t ins =
 
 
 type alias DefaultBasals = Float
+type alias StepResult = (IobUnit, CobUnit, BloodGlucoseReading)
 
-
-calculate :
-    Parameters
+fold :
+    (StepResult -> a -> a)
+    -> a
+    -> Parameters
     -> DefaultBasals
     -> Events
-    -> (IobUnit, CobUnit, BloodGlucoseReading)
-    -> (IobUnit, CobUnit, BloodGlucoseReading)
-calculate params basals events init =
+    -> StepResult
+    -> a
+fold reduce init' params basals events init =
     let
         event0 = TimeStep {carbs=0} 0 basals
-        init' = (init,event0)
-        step' t (last,event) =
-            let
-                event' =
-                    case Dict.get t events of
-                        Nothing ->
-                            TimeStep {carbs=0} 0 event.basal
-                        Just (Food f) ->
-                            TimeStep {carbs=f} 0 event.basal
-                        Just (Bolus i) ->
-                            TimeStep {carbs=0} i event.basal
-            in
-                ((step params event' last),event')
-    in
-        List.foldl step' init' [0..180]
-        |> fst
-
-
-trace :
-    Parameters
-    -> DefaultBasals
-    -> Events
-    -> (IobUnit, CobUnit, BloodGlucoseReading)
-    -> List (IobUnit, CobUnit, BloodGlucoseReading)
-trace params basals events init =
-    let
-        event0 = TimeStep {carbs=0} 0 basals
-        init' = (init,[],event0)
+        init'' = (init,init',event0)
         step' t (last,acc,event) =
             let
                 event' =
@@ -134,8 +114,28 @@ trace params basals events init =
                         Just (Bolus i) ->
                             TimeStep {carbs=0} i event.basal
             in
-                ((step params event' last),last::acc,event')
+                ((step params event' last),reduce last acc,event')
     in
-        List.foldl step' init' [0..180]
-        |> (\(last,acc,_) -> last::acc)
-        |> List.reverse
+        List.foldl step' init'' [0..180]
+        |> (\(last,acc,_) -> reduce last acc)
+
+
+calculate :
+    Parameters
+    -> DefaultBasals
+    -> Events
+    -> StepResult
+    -> StepResult
+calculate params basals events init =
+    fold always init params basals events init
+
+
+trace :
+    Parameters
+    -> DefaultBasals
+    -> Events
+    -> (IobUnit, CobUnit, BloodGlucoseReading)
+    -> List (IobUnit, CobUnit, BloodGlucoseReading)
+trace params basals events init =
+    fold (::) [] params basals events init
+    |> List.reverse
