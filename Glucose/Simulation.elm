@@ -98,8 +98,9 @@ fold :
     -> DefaultBasals
     -> Events
     -> StepResult
+    -> Int
     -> a
-fold reduce init' params basals events init =
+fold reduce init' params basals events init n =
     let
         event0 = TimeStep {carbs=0} 0 basals
         init'' = (init,init',event0)
@@ -116,7 +117,7 @@ fold reduce init' params basals events init =
             in
                 ((step params event' last),reduce last acc,event')
     in
-        List.foldl step' init'' [0..180]
+        List.foldl step' init'' [0..(n-1)]
         |> (\(last,acc,_) -> reduce last acc)
 
 
@@ -125,9 +126,10 @@ calculate :
     -> DefaultBasals
     -> Events
     -> StepResult
+    -> Int
     -> StepResult
-calculate params basals events init =
-    fold always init params basals events init
+calculate params basals events init n =
+    fold always init params basals events init n
 
 
 trace :
@@ -135,7 +137,8 @@ trace :
     -> DefaultBasals
     -> Events
     -> (IobUnit, CobUnit, BloodGlucoseReading)
+    -> Int
     -> List (IobUnit, CobUnit, BloodGlucoseReading)
-trace params basals events init =
-    fold (::) [] params basals events init
+trace params basals events init n =
+    fold (::) [] params basals events init n
     |> List.reverse
