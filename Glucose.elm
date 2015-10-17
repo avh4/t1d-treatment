@@ -64,11 +64,11 @@ view address model =
         [ Graph.matrix address result
         , Html.text <| toString model
         , Html.h3 [] [ Html.text "Correction Factor"]
-        , Graph.distplot (300,200) marg1
+        , Graph.histplot (300,200) marg1
         , Html.h3 [] [ Html.text "Carb Ratio"]
-        , Graph.distplot (300,200) marg2
+        , Graph.histplot (300,200) marg2
         , Html.h3 [] [ Html.text "Basal"]
-        , Graph.distplot (300,200) marg3
+        , Graph.histplot (300,200) marg3
         ]
 
 

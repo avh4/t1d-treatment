@@ -5,7 +5,8 @@
     "license": "BSD3",
     "source-directories": [
         ".",
-        "lib/elm-dataviz/src"
+        "lib/elm-dataviz/src",
+        "lib/elm-stats/src"
     ],
     "exposed-modules": [],
     "dependencies": {
