@@ -3,7 +3,6 @@ module Tests where
 import ElmTest.Test exposing (..)
 
 import BayesTest
-import StatsTest
 import Glucose.SimulationTest
 
 
@@ -12,6 +11,5 @@ all =
   suite "all"
     [
       BayesTest.all,
-      StatsTest.all,
       Glucose.SimulationTest.all
     ]

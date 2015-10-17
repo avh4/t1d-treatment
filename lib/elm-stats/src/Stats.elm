@@ -1,4 +1,6 @@
-module Stats (normal) where
+module Stats
+    ( normal
+    ) where
 
 
 type alias ContinuousDistribution =
