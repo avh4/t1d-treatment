@@ -5,7 +5,8 @@
     "license": "MIT",
     "source-directories": [
         ".",
-        "../src"
+        "../src",
+        "../../elm-stats/src"
     ],
     "exposed-modules": [],
     "dependencies": {

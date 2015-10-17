@@ -1,9 +1,10 @@
 module UnivariateDistributionExample where
 
+import Html
 import Graph
 
 
-data =
+histogram =
     [ (40, 1)
     , (50, 2)
     , (60, 5)
@@ -17,6 +18,12 @@ data =
     ]
 
 
+observations =
+    [ 1.5, 5, 7, 3, 20, 16, 7, 5.2, 7.01, 18 ]
+
+
 main =
-    data
-    |> Graph.distplot (300, 200)
+    Html.div []
+        [ histogram |> Graph.histplot (300, 200)
+        , observations |> Graph.distplot (300, 200)
+        ]

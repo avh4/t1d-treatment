@@ -1,7 +1,7 @@
 module Graph
     ( DenseDataset
     , xyDataset, matrixDataset
-    , graph, distplot, matrix
+    , graph, histplot, distplot, matrix
     ) where
 
 
@@ -15,6 +15,7 @@ import Array exposing (Array)
 import Set exposing (Set)
 import Dict exposing (Dict)
 import MatrixTable
+import Stats
 
 
 type alias Point = (Float, Float)
@@ -253,8 +254,8 @@ graph (w,h) dataSets =
         ]
 
 
-distplot : (Float,Float) -> List (Float, Float) -> Svg
-distplot (w,h) data =
+histplot : (Float,Float) -> List (Float, Float) -> Svg
+histplot (w,h) data =
     let
         svgW = w + 110 + (145-90) |> toString
         svgH = h + 80 |> toString
@@ -272,6 +273,13 @@ distplot (w,h) data =
             , barPlot normalize "rgba(32,74,136,0.4)" data
             ]
         ]
+
+
+distplot : (Float, Float) -> List (Float) -> Svg
+distplot (w,h) data =
+    data
+    |> Stats.bins
+    |> histplot (w,h)
 
 
 compareGraph : (Float,Float) -> (String,a->Float) -> (String,a->Float) -> List (List a) -> Svg
